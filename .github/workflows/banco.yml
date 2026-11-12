@@ -1,0 +1,38 @@
+name: Validar PostgreSQL
+on: [push, pull_request]
+jobs:
+  banco:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: erp_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: senha-efemera-apenas-ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: senha-efemera-apenas-ci
+      PGDATABASE: erp_ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar cliente
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Criar esquema e demonstração
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f instalar.sql
+          psql -X -v ON_ERROR_STOP=1 -f dados_demonstracao.sql
+      - name: Validar regras e permissões
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f tests/testes_integracao.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/testes_revisao.sql
+      - name: Validar concorrência
+        run: |
+          python3 tests/testes_concorrencia.py
+          python3 tests/testes_estresse.py

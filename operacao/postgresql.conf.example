@@ -1,0 +1,22 @@
+# EXEMPLO para o administrador: não é aplicado automaticamente.
+# Ajuste memória, discos, certificados, rede, retenção e disponibilidade ao ambiente.
+password_encryption = 'scram-sha-256'
+# ssl = on
+# ssl_cert_file = '/caminho/server.crt'
+# ssl_key_file = '/caminho/server.key'
+log_connections = on
+log_disconnections = on
+logging_collector = on
+log_destination = 'jsonlog'
+log_min_duration_statement = 1000
+# Evita registrar valores bind de dados pessoais/chaves. Não use log_statement=all.
+log_parameter_max_length = 0
+log_parameter_max_length_on_error = 0
+# Arquivos JSON podem ser coletados externamente por Filebeat/ELK ou Splunk.
+# Replica física: depende de outro servidor, pg_hba.conf, role REPLICATION e pg_basebackup.
+wal_level = replica
+max_wal_senders = 5
+max_replication_slots = 5
+# Configure archive_mode, archive_command e retenção somente com destino real validado.
+# Replicação não substitui backup. Failover/balanceamento (ex.: Patroni/PgBouncer)
+# exigem serviços externos e não são implementados por este DDL.
